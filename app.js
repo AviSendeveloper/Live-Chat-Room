@@ -9,7 +9,16 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 io.on("connection", (socket) => {
+    const allUser = [];
     console.log(`New client is connected with id: ${socket.id}`);
+
+    socket.on("disconnect", () => console.log("disconnected"));
+
+    socket.on("join-room", ({ username, room }) => {
+        socket.join(room);
+        // allUser.push(username);
+        // socket.emit("push-join-response", allUser);
+    });
 });
 
 app.use(express.static(path.join(__dirname, "public")));
