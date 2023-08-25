@@ -2,6 +2,7 @@ const express = require("express");
 const http = require("http");
 const path = require("path");
 const socketIo = require("socket.io");
+const moment = require("moment");
 
 const app = express();
 const server = http.createServer(app);
@@ -16,8 +17,14 @@ io.on("connection", (socket) => {
 
     socket.on("join-room", ({ username, room }) => {
         socket.join(room);
-        // allUser.push(username);
-        // socket.emit("push-join-response", allUser);
+    });
+
+    socket.on("send-msg", ({ user, msg, room, time }) => {
+        socket.to(room).emit("broadcast", {
+            user,
+            msg,
+            time,
+        });
     });
 });
 

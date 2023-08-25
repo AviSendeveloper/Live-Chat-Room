@@ -1,5 +1,4 @@
 let socket;
-let userList = ["user1"];
 const currentUrl = window.location.href;
 const url = new URL(currentUrl);
 
@@ -11,27 +10,45 @@ if (!username || !room) {
 } else {
     socket = io();
 }
-showUserList();
 
 socket.emit("join-room", { username, room });
 
-// socket.on("push-join-response", (allUser) => {
-//     userList = [...allUser];
-//     showUserList();
-// });
+socket.on("broadcast", ({ user, msg, time }) => {
+    displayMsg(user, msg, time);
+});
 
-function showUserList() {
-    const ulElem = document.getElementById("users");
+// chat
+const form = document.getElementById("chat-form");
+const sendBtn = document.getElementById("send");
+const msgContainer = document.getElementsByClassName("chat-messages")[0];
+const msgInput = document.getElementById("msg");
 
-    for (let user of userList) {
-        const liElem = createUserLi(user);
-        ulElem.appendChild(liElem);
-    }
-    console.log(ulElem);
+function displayMsg(user, msgBody, time) {
+    const mainDiv = document.createElement("div");
+    mainDiv.className = "message";
+
+    let divString = `<p class="meta">${user} <span>${time}</span></p>
+    <p class="text">
+      ${msgBody}
+    </p>`;
+
+    mainDiv.innerHTML = divString;
+    msgContainer.appendChild(mainDiv);
 }
 
-function createUserLi(user) {
-    const div = document.createElement("li");
-    div.textContent = user;
-    return div;
-}
+form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const time = moment().format("LT");
+
+    const msg = msgInput.value;
+    displayMsg(username, msg, time);
+    msgInput.value = "";
+
+    socket.emit("send-msg", {
+        user: username,
+        msg: msg,
+        room: room,
+        time: time,
+    });
+});
